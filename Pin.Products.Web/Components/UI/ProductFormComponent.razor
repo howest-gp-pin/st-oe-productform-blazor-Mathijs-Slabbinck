@@ -1,0 +1,36 @@
+<div class="col col-lg-4 mx-auto">
+    <EditForm Model="NewProduct" OnValidSubmit="@(() => OnSave.InvokeAsync(NewProduct))">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>Title:</label>
+            <InputText @bind-Value="NewProduct.Title" class="form-control" />
+            <ValidationMessage For="@(() => NewProduct.Title)" />
+        </div>
+        <div class="form-group">
+            <label>Price:</label>
+            <InputNumber @bind-Value="NewProduct.Price" class="form-control" />
+            <ValidationMessage For="@(() => NewProduct.Price)" />
+        </div>
+        <div class="form-group">
+            <label>Description:</label>
+            <InputText @bind-Value="NewProduct.Description" class="form-control" />
+            <ValidationMessage For="@(() => NewProduct.Description)" />
+        </div>
+        <div class="form-group">
+            <label>Category ID:</label>
+            <InputNumber @bind-Value="NewProduct.CategoryId" class="form-control" />
+            <ValidationMessage For="@(() => NewProduct.CategoryId)" />
+        </div>
+        <button type="submit" class="btn btn-outline-info">Save</button>
+        <button type="button" class="btn btn-outline-warning" @onclick="@(() => OnCancel.InvokeAsync())">Cancel</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public CreateOrUpdateProductModel NewProduct { get; set; }
+    [Parameter]
+    public EventCallback<CreateOrUpdateProductModel> OnSave { get; set; }
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+}

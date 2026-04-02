@@ -1,0 +1,19 @@
+<div class="col col-lg-3 border border-1 rounded rounded-2 text-center m-1 p-2">
+    <p><strong>@Product.Title</strong></p>
+    <p>@Product.Description</p>
+    <p>Price: @Product.Price</p>
+    <p>Category: @Product.Category?.Name</p>
+    <div>
+        <button class="btn btn-outline-info" @onclick="@(() => OnEdit.InvokeAsync(Product))">Edit</button>
+        <button class="btn btn-outline-danger" @onclick="@(() => OnDelete.InvokeAsync(Product.Id))">Delete</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProductModel Product { get; set; }
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
+    [Parameter]
+    public EventCallback<ProductModel> OnEdit { get; set; }
+}

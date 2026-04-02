@@ -4,12 +4,12 @@
 @* show error messages *@
 @if (errorMessage is not null)
 {
-    <AlertComponent Style="danger" Message="@errorMessage"></AlertComponent>
+    <AlertComponent ComponentStyle="danger" Message="@errorMessage"></AlertComponent>
 }
 @* show user messages *@
 @if(message is not null)
 { 
-    <AlertComponent Style="info" Message="@message"></AlertComponent>
+    <AlertComponent ComponentStyle="info" Message="@message"></AlertComponent>
 }
 @if (categoryModels is null)
 {

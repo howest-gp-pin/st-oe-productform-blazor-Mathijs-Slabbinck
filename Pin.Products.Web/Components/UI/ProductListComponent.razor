@@ -1,0 +1,22 @@
+<div class="row">
+    <div class="col col-lg-2">
+        <button type="button" class="btn btn-outline-info" @onclick="@(() => OnAdd.InvokeAsync())">New</button>
+    </div>
+</div>
+<div class="row">
+    @foreach (var product in Products)
+    {
+        <ProductComponent @key="product.Id" Product="product" OnDelete="OnDelete" OnEdit="OnEdit"></ProductComponent>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<ProductModel> Products { get; set; }
+    [Parameter]
+    public EventCallback OnAdd { get; set; }
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
+    [Parameter]
+    public EventCallback<ProductModel> OnEdit { get; set; }
+}

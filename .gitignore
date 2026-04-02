@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Claude Code setup (auto-generated)
+.claude/conventions/
+.claude/regulations/
+.claude/skills/
+.claude/SETUP.md
+.claude/reviews/
+.claude/screenshots/
