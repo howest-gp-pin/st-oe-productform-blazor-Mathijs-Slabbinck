@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Pin.Products.Core.Services.Models
 {
@@ -15,21 +10,23 @@ namespace Pin.Products.Core.Services.Models
 
         [JsonPropertyName("title")]
         [Required(ErrorMessage = "Please provide a Title!")]
-        public string Title { get; set; }
+        [StringLength(200, ErrorMessage = "Title cannot exceed 200 characters!")]
+        public required string Title { get; set; }
 
         [JsonPropertyName("price")]
         [Range(1, int.MaxValue, ErrorMessage = "Please provide a valid Price!")]
-        public int Price { get; set; }
+        public decimal Price { get; set; }
 
         [JsonPropertyName("description")]
         [Required(ErrorMessage = "Please provide a Description!")]
-        public string Description { get; set; }
+        [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters!")]
+        public required string Description { get; set; }
 
         [JsonPropertyName("categoryId")]
         [Range(1, int.MaxValue, ErrorMessage = "Please provide a valid Category!")]
         public int CategoryId { get; set; }
 
         [JsonPropertyName("images")]
-        public List<string> Images { get; set; }
+        public required List<string> Images { get; set; }
     }
 }

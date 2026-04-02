@@ -1,25 +1,50 @@
-<div class="col col-lg-4 mx-auto">
+<div class="col col-md-6 col-lg-4 mx-auto">
+    <h2>@(NewProduct.Id == 0 ? "New Product" : "Edit Product")</h2>
     <EditForm Model="NewProduct" OnValidSubmit="@(() => OnSave.InvokeAsync(NewProduct))">
         <DataAnnotationsValidator />
-        <div class="form-group">
-            <label>Title:</label>
-            <InputText @bind-Value="NewProduct.Title" class="form-control" />
-            <ValidationMessage For="@(() => NewProduct.Title)" />
+        <div role="alert" aria-live="assertive">
+            <ValidationSummary />
         </div>
-        <div class="form-group">
-            <label>Price:</label>
-            <InputNumber @bind-Value="NewProduct.Price" class="form-control" />
-            <ValidationMessage For="@(() => NewProduct.Price)" />
+        <div class="mb-3">
+            <label for="product-title">Title:</label>
+            <InputText id="product-title"
+                       @bind-Value="NewProduct.Title"
+                       class="form-control"
+                       autocomplete="off"
+                       aria-describedby="product-title-validation" />
+            <ValidationMessage id="product-title-validation" For="@(() => NewProduct.Title)" />
         </div>
-        <div class="form-group">
-            <label>Description:</label>
-            <InputText @bind-Value="NewProduct.Description" class="form-control" />
-            <ValidationMessage For="@(() => NewProduct.Description)" />
+        <div class="mb-3">
+            <label for="product-price">Price:</label>
+            <InputNumber id="product-price"
+                         @bind-Value="NewProduct.Price"
+                         class="form-control"
+                         autocomplete="off"
+                         aria-describedby="product-price-validation" />
+            <ValidationMessage id="product-price-validation" For="@(() => NewProduct.Price)" />
         </div>
-        <div class="form-group">
-            <label>Category ID:</label>
-            <InputNumber @bind-Value="NewProduct.CategoryId" class="form-control" />
-            <ValidationMessage For="@(() => NewProduct.CategoryId)" />
+        <div class="mb-3">
+            <label for="product-description">Description:</label>
+            <InputText id="product-description"
+                       @bind-Value="NewProduct.Description"
+                       class="form-control"
+                       autocomplete="off"
+                       aria-describedby="product-description-validation" />
+            <ValidationMessage id="product-description-validation" For="@(() => NewProduct.Description)" />
+        </div>
+        <div class="mb-3">
+            <label for="product-category">Category:</label>
+            <InputSelect id="product-category"
+                         @bind-Value="NewProduct.CategoryId"
+                         class="form-control"
+                         aria-describedby="product-category-validation">
+                <option value="0">-- Select a category --</option>
+                @foreach (CategoryModel category in Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage id="product-category-validation" For="@(() => NewProduct.CategoryId)" />
         </div>
         <button type="submit" class="btn btn-outline-info">Save</button>
         <button type="button" class="btn btn-outline-warning" @onclick="@(() => OnCancel.InvokeAsync())">Cancel</button>
@@ -28,7 +53,9 @@
 
 @code {
     [Parameter]
-    public CreateOrUpdateProductModel NewProduct { get; set; }
+    public required CreateOrUpdateProductModel NewProduct { get; set; }
+    [Parameter]
+    public required IEnumerable<CategoryModel> Categories { get; set; }
     [Parameter]
     public EventCallback<CreateOrUpdateProductModel> OnSave { get; set; }
     [Parameter]

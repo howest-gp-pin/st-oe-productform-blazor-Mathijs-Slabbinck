@@ -8,28 +8,42 @@ namespace Pin.Products.Web
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-            // Add services to the container.
-            //register the httpClientService
-            builder.Services.AddHttpClient();
-            //register service classes
-            builder.Services.AddScoped<ICategoryApiService, CategoryApiService>();
-            builder.Services.AddScoped<IProductApiService, ProductApiService>();
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddHttpClient<ICategoryApiService, CategoryApiService>(client =>
+            {
+                string baseUrl = builder.Configuration["ApiSettings:CategoryBaseUrl"]
+                    ?? "https://api.escuelajs.co/api/v1/categories/";
+                client.BaseAddress = new Uri(baseUrl);
+            });
+
+            builder.Services.AddHttpClient<IProductApiService, ProductApiService>(client =>
+            {
+                string baseUrl = builder.Configuration["ApiSettings:ProductBaseUrl"]
+                    ?? "https://api.escuelajs.co/api/v1/products/";
+                client.BaseAddress = new Uri(baseUrl);
+            });
+
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            var app = builder.Build();
+            WebApplication app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                context.Response.Headers["X-Frame-Options"] = "DENY";
+                context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                await next();
+            });
 
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseAntiforgery();
 

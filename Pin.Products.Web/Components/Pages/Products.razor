@@ -1,122 +1,31 @@
 @page "/products"
-@inject IProductApiService ProductService
 
-<h3>Products</h3>
+<PageTitle>Products — Pin.Products</PageTitle>
 
-@* show error messages *@
-@if (errorMessage is not null)
+<h1>Products</h1>
+
+@if (errorMessages is not null && errorMessages.Any())
 {
-    <AlertComponent ComponentStyle="danger" Message="@errorMessage"></AlertComponent>
+    <AlertComponent Style="AlertStyle.Danger" Messages="errorMessages" />
 }
 
-@* show user messages *@
-@if (message is not null)
+@if (successMessages is not null && successMessages.Any())
 {
-    <AlertComponent ComponentStyle="info" Message="@message"></AlertComponent>
+    <AlertComponent Style="AlertStyle.Info" Messages="successMessages" />
 }
 
 @if (productModels is null)
 {
-    <LoadingComponent></LoadingComponent>
+    <LoadingComponent />
 }
 else
 {
     @if (newProduct is not null)
     {
-        <ProductFormComponent NewProduct="newProduct" OnSave="Save" OnCancel="Cancel"></ProductFormComponent>
+        <ProductFormComponent NewProduct="newProduct" Categories="categories" OnSave="Save" OnCancel="Cancel" />
     }
     else
     {
-        <ProductListComponent Products="productModels" OnAdd="NewProduct" OnDelete="Delete" OnEdit="Edit"></ProductListComponent>
-    }
-}
-@code {
-    private string? errorMessage;
-    private string? message;
-    private CreateOrUpdateProductModel? newProduct;
-    private IEnumerable<ProductModel>? productModels;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await GetProducts();
-    }
-
-    private async Task GetProducts()
-    {
-        errorMessage = null;
-        productModels = null;
-        var result = await ProductService.GetAllAsync();
-        if (result.IsSuccess)
-        {
-            productModels = result.Data;
-        }
-        else
-        {
-            errorMessage = string.Join(' ', result.Errors);
-        }
-    }
-
-    private void NewProduct()
-    {
-        errorMessage = null;
-        newProduct = new();
-    }
-
-    private async Task Save(CreateOrUpdateProductModel createOrUpdateProductModel)
-    {
-        var result = new ResultModel<ProductModel>();
-        if (createOrUpdateProductModel.Id.Equals(0))
-        {
-            result = await ProductService.CreateAsync(createOrUpdateProductModel);
-        }
-        else
-        {
-            result = await ProductService.UpdateAsync(createOrUpdateProductModel);
-        }
-
-        if (result.IsSuccess)
-        {
-            if (createOrUpdateProductModel.Id.Equals(0))
-                message = "Product created";
-            else
-                message = "Product updated";
-        }
-        else
-        {
-            errorMessage = string.Join("<br>", result.Errors);
-        }
-
-        await GetProducts();
-        newProduct = null;
-    }
-
-    private void Cancel()
-    {
-        newProduct = null;
-    }
-
-    private async Task Delete(int id)
-    {
-        errorMessage = null;
-        if (await ProductService.DeleteAsync(id))
-        {
-            message = "Product deleted";
-        }
-        else
-        {
-            errorMessage = "Product not deleted!";
-        }
-        await GetProducts();
-    }
-
-    private void Edit(ProductModel productModel)
-    {
-        newProduct = new();
-        newProduct.Id = productModel.Id;
-        newProduct.Title = productModel.Title;
-        newProduct.Price = productModel.Price;
-        newProduct.Description = productModel.Description;
-        newProduct.CategoryId = productModel.Category?.Id ?? 0;
-        newProduct.Images = productModel.Images;
+        <ProductListComponent Products="productModels" OnAdd="NewProduct" OnDelete="Delete" OnEdit="Edit" />
     }
 }

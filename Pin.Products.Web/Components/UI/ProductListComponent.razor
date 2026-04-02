@@ -1,18 +1,20 @@
-<div class="row">
-    <div class="col col-lg-2">
-        <button type="button" class="btn btn-outline-info" @onclick="@(() => OnAdd.InvokeAsync())">New</button>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-lg-2">
+            <button type="button" class="btn btn-outline-info" @onclick="@(() => OnAdd.InvokeAsync())">New</button>
+        </div>
     </div>
-</div>
-<div class="row">
-    @foreach (var product in Products)
-    {
-        <ProductComponent @key="product.Id" Product="product" OnDelete="OnDelete" OnEdit="OnEdit"></ProductComponent>
-    }
+    <div class="row">
+        @foreach (ProductModel product in Products)
+        {
+            <ProductComponent @key="product.Id" Product="product" OnDelete="OnDelete" OnEdit="OnEdit" />
+        }
+    </div>
 </div>
 
 @code {
     [Parameter]
-    public IEnumerable<ProductModel> Products { get; set; }
+    public required IEnumerable<ProductModel> Products { get; set; }
     [Parameter]
     public EventCallback OnAdd { get; set; }
     [Parameter]

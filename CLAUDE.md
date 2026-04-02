@@ -46,18 +46,22 @@ dotnet run --project Pin.Products.Web
 Pin.Products.Core/
   Services/
     Interfaces/          # ICategoryApiService, IProductApiService
-    Models/              # CategoryModel, ProductModel, ResultModel, Create/Update models
+    Models/              # BaseResult, ResultModel<T>, CategoryModel, ProductModel,
+                         #   CreateOrUpdateCategoryModel, CreateOrUpdateProductModel
     CategoryApiService.cs
     ProductApiService.cs
 
 Pin.Products.Web/
   Components/
-    Pages/               # Categories, Products, Home, Counter, Weather, Error
+    Pages/               # Categories (.razor + .razor.cs), Products (.razor + .razor.cs),
+                         #   Home, Counter, Weather, Error
     UI/                  # AlertComponent, CategoryComponent, CategoryFormComponent,
-                         #   CategoryListComponent, LoadingComponent
+                         #   CategoryListComponent, ProductComponent, ProductFormComponent,
+                         #   ProductListComponent, LoadingComponent
     Layout/              # MainLayout, NavMenu
     App.razor
     Routes.razor
     _Imports.razor
+  Enums/                 # AlertStyle
   Program.cs
 ```

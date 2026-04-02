@@ -1,17 +1,26 @@
-<div class="col col-lg-3 border border-1 rounded rounded-2 text-center m-1 p-2">
-    <p><strong>@Product.Title</strong></p>
-    <p>@Product.Description</p>
-    <p>Price: @Product.Price</p>
-    <p>Category: @Product.Category?.Name</p>
+<article class="col col-sm-6 col-md-4 col-lg-3 border rounded text-center m-1 p-2">
+    <h2 class="h6"><strong>@Product.Title</strong></h2>
+    <dl>
+        <dt class="visually-hidden">Description</dt>
+        <dd>@Product.Description</dd>
+        <dt>Price</dt>
+        <dd>@Product.Price</dd>
+        <dt>Category</dt>
+        <dd>@Product.Category?.Name</dd>
+    </dl>
     <div>
-        <button class="btn btn-outline-info" @onclick="@(() => OnEdit.InvokeAsync(Product))">Edit</button>
-        <button class="btn btn-outline-danger" @onclick="@(() => OnDelete.InvokeAsync(Product.Id))">Delete</button>
+        <button class="btn btn-outline-info"
+                aria-label="Edit @Product.Title"
+                @onclick="@(() => OnEdit.InvokeAsync(Product))">Edit</button>
+        <button class="btn btn-outline-danger"
+                aria-label="Delete @Product.Title"
+                @onclick="@(() => OnDelete.InvokeAsync(Product.Id))">Delete</button>
     </div>
-</div>
+</article>
 
 @code {
     [Parameter]
-    public ProductModel Product { get; set; }
+    public required ProductModel Product { get; set; }
     [Parameter]
     public EventCallback<int> OnDelete { get; set; }
     [Parameter]

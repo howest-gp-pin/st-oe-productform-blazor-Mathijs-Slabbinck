@@ -1,17 +1,12 @@
-﻿using Pin.Products.Core.Services.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Pin.Products.Core.Services.Models;
 
 namespace Pin.Products.Core.Services.Interfaces
 {
     public interface IProductApiService
     {
         Task<ResultModel<IEnumerable<ProductModel>>> GetAllAsync();
-        Task<ResultModel<ProductModel>> CreateAsync(CreateOrUpdateProductModel newProduct);
-        Task<ResultModel<ProductModel>> UpdateAsync(CreateOrUpdateProductModel newProduct);
-        Task<bool> DeleteAsync(int id);
+        Task<ResultModel<ProductModel>> CreateAsync(CreateOrUpdateProductModel product);
+        Task<ResultModel<ProductModel>> UpdateAsync(CreateOrUpdateProductModel product);
+        Task<ResultModel<bool>> DeleteAsync(int id);
     }
 }

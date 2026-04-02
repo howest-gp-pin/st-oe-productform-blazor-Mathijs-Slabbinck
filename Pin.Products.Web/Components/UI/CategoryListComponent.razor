@@ -1,18 +1,19 @@
-﻿
-<div class="row">
-    <div class="col col-lg-2">
-        <button type="button" class="btn btn-outline-info" @onclick="@(() => OnAdd.InvokeAsync())">New</button>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-lg-2">
+            <button type="button" class="btn btn-outline-info" @onclick="@(() => OnAdd.InvokeAsync())">New</button>
+        </div>
     </div>
-</div>
-<div class="row">
-    @foreach (var category in Categories)
-    {
-        <CategoryComponent Category="category" OnDelete="OnDelete" OnEdit="OnEdit"></CategoryComponent>
-    }
+    <div class="row">
+        @foreach (CategoryModel category in Categories)
+        {
+            <CategoryComponent @key="category.Id" Category="category" OnDelete="OnDelete" OnEdit="OnEdit" />
+        }
+    </div>
 </div>
 @code {
     [Parameter]
-    public IEnumerable<CategoryModel> Categories { get; set; }
+    public required IEnumerable<CategoryModel> Categories { get; set; }
     [Parameter]
     public EventCallback OnAdd { get; set; }
     [Parameter]

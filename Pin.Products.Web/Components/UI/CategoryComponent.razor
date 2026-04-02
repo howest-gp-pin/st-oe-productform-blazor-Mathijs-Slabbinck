@@ -1,15 +1,18 @@
-﻿
-<div class="col col-lg-2 border border-1 rounded rounded-2 text-center m-1 p-2">
-    <p>@Category.Name</p>
+<article class="col col-sm-6 col-md-4 col-lg-2 border rounded text-center m-1 p-2">
+    <h2 class="h6">@Category.Name</h2>
     <div>
-        <button class="btn btn-outline-info" @onclick="@(()=>OnEdit.InvokeAsync(Category))">Edit</button>
-        <button class="btn btn-outline-danger" @onclick="@(()=> OnDelete.InvokeAsync(Category.Id))">Delete</button>
+        <button class="btn btn-outline-info"
+                aria-label="Edit @Category.Name"
+                @onclick="@(() => OnEdit.InvokeAsync(Category))">Edit</button>
+        <button class="btn btn-outline-danger"
+                aria-label="Delete @Category.Name"
+                @onclick="@(() => OnDelete.InvokeAsync(Category.Id))">Delete</button>
     </div>
-</div>
+</article>
 
 @code {
     [Parameter]
-    public CategoryModel Category { get; set; }
+    public required CategoryModel Category { get; set; }
     [Parameter]
     public EventCallback<int> OnDelete { get; set; }
     [Parameter]

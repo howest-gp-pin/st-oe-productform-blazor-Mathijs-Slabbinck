@@ -1,114 +1,118 @@
-﻿using Pin.Products.Core.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using Pin.Products.Core.Services.Interfaces;
 using Pin.Products.Core.Services.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Pin.Products.Core.Services
 {
     public class ProductApiService : IProductApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<ProductApiService> _logger;
 
-        public ProductApiService(HttpClient httpClient)
+        public ProductApiService(HttpClient httpClient, ILogger<ProductApiService> logger)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://api.escuelajs.co/api/v1/products");
+            _logger = logger;
         }
 
-        public async Task<ResultModel<ProductModel>> CreateAsync(CreateOrUpdateProductModel newProduct)
+        public async Task<ResultModel<ProductModel>> CreateAsync(CreateOrUpdateProductModel product)
         {
             try
             {
-                var result = await _httpClient.PostAsJsonAsync($"{_httpClient.BaseAddress}", newProduct);
+                HttpResponseMessage result = await _httpClient.PostAsJsonAsync(string.Empty, product);
                 if (result.IsSuccessStatusCode)
                 {
-                    return new ResultModel<ProductModel>
+                    ProductModel? data = await result.Content.ReadFromJsonAsync<ProductModel>();
+                    if (data is not null)
                     {
-                        Data = JsonSerializer.Deserialize<ProductModel>(await result.Content.ReadAsStringAsync())
-                    };
+                        return new ResultModel<ProductModel> { Data = data };
+                    }
                 }
-                return new ResultModel<ProductModel>
-                {
-                    Errors = new List<string> { "Product not created!" }
-                };
+
+                ResultModel<ProductModel> errorResult = new ResultModel<ProductModel>();
+                errorResult.Errors.Add("Product not created!");
+                return errorResult;
             }
             catch (HttpRequestException httpRequestException)
             {
-                Console.WriteLine(httpRequestException.Message);
-                return new ResultModel<ProductModel>
-                {
-                    Errors = new List<string> { "Connection error!" }
-                };
+                _logger.LogError(httpRequestException, "Error creating product");
+                ResultModel<ProductModel> errorResult = new ResultModel<ProductModel>();
+                errorResult.Errors.Add("Connection error, please try again later.");
+                return errorResult;
             }
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<ResultModel<bool>> DeleteAsync(int id)
         {
+            ResultModel<bool> resultModel = new ResultModel<bool>();
             try
             {
-                var result = await _httpClient.DeleteAsync($"{_httpClient.BaseAddress}/{id}");
-                if(result.IsSuccessStatusCode)
+                HttpResponseMessage result = await _httpClient.DeleteAsync($"{id}");
+                if (result.IsSuccessStatusCode)
                 {
-                    return true;
+                    resultModel.Data = true;
+                    return resultModel;
                 }
-                return false;
-            }catch(HttpRequestException httpRequestException)
+
+                resultModel.Errors.Add("Product not deleted!");
+                return resultModel;
+            }
+            catch (HttpRequestException httpRequestException)
             {
-                return false;
+                _logger.LogError(httpRequestException, "Error deleting product {Id}", id);
+                resultModel.Errors.Add("Connection error, please try again later.");
+                return resultModel;
             }
         }
 
         public async Task<ResultModel<IEnumerable<ProductModel>>> GetAllAsync()
         {
-            var resultModel = new ResultModel<IEnumerable<ProductModel>>();
+            ResultModel<IEnumerable<ProductModel>> resultModel = new ResultModel<IEnumerable<ProductModel>>();
             try
             {
-                var result = await _httpClient.GetAsync($"{_httpClient.BaseAddress}");
-                if(result.IsSuccessStatusCode)
+                IEnumerable<ProductModel>? data = await _httpClient.GetFromJsonAsync<IEnumerable<ProductModel>>(string.Empty);
+                if (data is not null)
                 {
-                    var content = await result.Content.ReadAsStringAsync();
-                    resultModel.Data = JsonSerializer.Deserialize<IEnumerable<ProductModel>>(content);
+                    resultModel.Data = data;
                     return resultModel;
                 }
-                resultModel.Errors = new List<string> { "Something went wrong!" };
+
+                resultModel.Errors.Add("Something went wrong!");
                 return resultModel;
-                
-            }catch(HttpRequestException httpRequestException)
+            }
+            catch (HttpRequestException httpRequestException)
             {
-                resultModel.Errors = new List<string>{"Connection error" };
+                _logger.LogError(httpRequestException, "Error fetching products");
+                resultModel.Errors.Add("Connection error, please try again later.");
                 return resultModel;
             }
         }
 
-        public async Task<ResultModel<ProductModel>> UpdateAsync(CreateOrUpdateProductModel newProduct)
+        public async Task<ResultModel<ProductModel>> UpdateAsync(CreateOrUpdateProductModel product)
         {
             try
             {
-                var result = await _httpClient.PutAsJsonAsync($"{_httpClient.BaseAddress}/{newProduct.Id}", newProduct);
+                HttpResponseMessage result = await _httpClient.PutAsJsonAsync($"{product.Id}", product);
                 if (result.IsSuccessStatusCode)
                 {
-                    return new ResultModel<ProductModel>
+                    ProductModel? data = await result.Content.ReadFromJsonAsync<ProductModel>();
+                    if (data is not null)
                     {
-                        Data = JsonSerializer.Deserialize<ProductModel>(await result.Content.ReadAsStringAsync())
-                    };
+                        return new ResultModel<ProductModel> { Data = data };
+                    }
                 }
-                return new ResultModel<ProductModel>
-                {
-                    Errors = new List<string> { "Product not updated!" }
-                };
+
+                ResultModel<ProductModel> errorResult = new ResultModel<ProductModel>();
+                errorResult.Errors.Add("Product not updated!");
+                return errorResult;
             }
             catch (HttpRequestException httpRequestException)
             {
-                Console.WriteLine(httpRequestException.Message);
-                return new ResultModel<ProductModel>
-                {
-                    Errors = new List<string> { "Connection error!" }
-                };
+                _logger.LogError(httpRequestException, "Error updating product {Id}", product.Id);
+                ResultModel<ProductModel> errorResult = new ResultModel<ProductModel>();
+                errorResult.Errors.Add("Connection error, please try again later.");
+                return errorResult;
             }
         }
     }

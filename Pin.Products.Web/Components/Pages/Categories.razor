@@ -1,128 +1,31 @@
-﻿@page "/categories"
-@inject ICategoryApiService CategoryApiService
-<h3>Categories</h3>
-@* show error messages *@
-@if (errorMessage is not null)
+@page "/categories"
+
+<PageTitle>Categories — Pin.Products</PageTitle>
+
+<h1>Categories</h1>
+
+@if (errorMessages is not null && errorMessages.Any())
 {
-    <AlertComponent ComponentStyle="danger" Message="@errorMessage"></AlertComponent>
+    <AlertComponent Style="AlertStyle.Danger" Messages="errorMessages" />
 }
-@* show user messages *@
-@if(message is not null)
-{ 
-    <AlertComponent ComponentStyle="info" Message="@message"></AlertComponent>
+
+@if (successMessages is not null && successMessages.Any())
+{
+    <AlertComponent Style="AlertStyle.Info" Messages="successMessages" />
 }
+
 @if (categoryModels is null)
 {
-    <LoadingComponent></LoadingComponent>
+    <LoadingComponent />
 }
 else
 {
     @if (newCategory is not null)
     {
-        //show the new category form
-        <CategoryFormComponent NewCategory="newCategory" OnSave="Save" OnCancel="Cancel"></CategoryFormComponent>
+        <CategoryFormComponent NewCategory="newCategory" OnSave="Save" OnCancel="Cancel" />
     }
     else
     {
-        @* show category list component *@
-        <CategoryListComponent Categories="categoryModels" OnAdd="NewCategory" OnDelete="Delete" OnEdit="Edit"></CategoryListComponent>
-    }
-}
-@code {
-    private string errorMessage;
-    private string message;
-    private CreateOrUpdateCategoryModel newCategory;
-    private IEnumerable<CategoryModel> categoryModels;
-    protected override async Task OnInitializedAsync()
-    {
-        await GetCategories();
-    }
-    private async Task GetCategories()
-    {
-        errorMessage = null;
-        categoryModels = null;
-        var result = await CategoryApiService.GetAllAsync();
-        if (result.IsSuccess)
-        {
-            categoryModels = result.Data;
-        }
-        else
-        {
-            //display error
-            errorMessage = string.Join(' ', result.Errors);
-        }
-    }
-    //reacts/handles a click on the 'New' button
-    //displays the form
-    private void NewCategory()
-    {
-        errorMessage = null;
-        newCategory = new();
-    }
-    //method to send a post request to create a new category
-    private async Task Save(CreateOrUpdateCategoryModel createOrUpdateCategoryModel)
-    {
-        //check if id == 0 => new category else update category
-        //call service class to send post to api
-        var result = new ResultModel<CategoryModel>();
-        if(createOrUpdateCategoryModel.Id.Equals(0))
-        {
-            result = await CategoryApiService.CreateAsync(createOrUpdateCategoryModel);
-        }
-        else
-        {
-            //update the category
-            result = await CategoryApiService.UpdateAsync(createOrUpdateCategoryModel);
-
-        }
-        //check if success
-        if (result.IsSuccess)
-        {
-            //show success message
-            if (newCategory.Id.Equals(0))
-                message = "Category created";
-            else
-                message = "Category updated";
-        }
-        else
-        {
-            //show error message
-            errorMessage = string.Join("<br>", result.Errors);
-        }
-
-        //hide form => newCategory = null
-        //reload categories
-        await GetCategories();
-        newCategory = null;
-    }
-    private void Cancel()
-    {
-        //reset the newCategory to display the list
-        newCategory = null;
-    }
-    private async Task Delete(int id)
-    {
-        errorMessage = null;
-        //call the service method
-        if (await CategoryApiService.DeleteAsync(id))
-        {
-            //show success message
-            message = "Category deleted";
-        }
-        else
-        {
-            //show errorMessage
-            errorMessage = "Category not deleted!";
-        }
-        //reload the categories
-        await GetCategories();
-    }
-    private void Edit(CategoryModel categoryModel)
-    {
-        //transform/project to newCategory to update
-        newCategory = new();
-        newCategory.Id = categoryModel.Id;
-        newCategory.Name = categoryModel.Name;
-        newCategory.Image = categoryModel.Image;
+        <CategoryListComponent Categories="categoryModels" OnAdd="NewCategory" OnDelete="Delete" OnEdit="Edit" />
     }
 }

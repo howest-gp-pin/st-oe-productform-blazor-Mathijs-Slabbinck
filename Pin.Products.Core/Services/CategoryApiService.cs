@@ -1,104 +1,123 @@
-﻿using Pin.Products.Core.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using Pin.Products.Core.Services.Interfaces;
 using Pin.Products.Core.Services.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Pin.Products.Core.Services
 {
     public class CategoryApiService : ICategoryApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<CategoryApiService> _logger;
 
-        public CategoryApiService(HttpClient httpClient)
+        public CategoryApiService(HttpClient httpClient, ILogger<CategoryApiService> logger)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://api.escuelajs.co/api/v1/categories");
+            _logger = logger;
         }
 
-        public async Task<ResultModel<CategoryModel>> CreateAsync(CreateOrUpdateCategoryModel newCategory)
+        public async Task<ResultModel<CategoryModel>> CreateAsync(CreateOrUpdateCategoryModel category)
         {
-            newCategory.Image = "https://placeimg.com/640/480/any";
-            var result = await _httpClient.PostAsJsonAsync($"{_httpClient.BaseAddress}",newCategory);
-            if(result.IsSuccessStatusCode)
+            try
             {
-                return new ResultModel<CategoryModel>
+                if (string.IsNullOrWhiteSpace(category.Image))
                 {
-                    Data = JsonSerializer.Deserialize<CategoryModel>(await result.Content.ReadAsStringAsync())
-                };
+                    category.Image = "https://placeimg.com/640/480/any";
+                }
+
+                HttpResponseMessage result = await _httpClient.PostAsJsonAsync(string.Empty, category);
+                if (result.IsSuccessStatusCode)
+                {
+                    CategoryModel? data = await result.Content.ReadFromJsonAsync<CategoryModel>();
+                    if (data is not null)
+                    {
+                        return new ResultModel<CategoryModel> { Data = data };
+                    }
+                }
+
+                ResultModel<CategoryModel> errorResult = new ResultModel<CategoryModel>();
+                errorResult.Errors.Add("Category not created!");
+                return errorResult;
             }
-            return new ResultModel<CategoryModel>
+            catch (HttpRequestException httpRequestException)
             {
-                Errors = new List<string> { "Category not created!" }
-            };
+                _logger.LogError(httpRequestException, "Error creating category");
+                ResultModel<CategoryModel> errorResult = new ResultModel<CategoryModel>();
+                errorResult.Errors.Add("Connection error, please try again later.");
+                return errorResult;
+            }
         }
 
         public async Task<ResultModel<IEnumerable<CategoryModel>>> GetAllAsync()
         {
-            var resultModel = new ResultModel<IEnumerable<CategoryModel>>();
+            ResultModel<IEnumerable<CategoryModel>> resultModel = new ResultModel<IEnumerable<CategoryModel>>();
             try
             {
-                var result = await _httpClient.GetAsync($"{_httpClient.BaseAddress}");
-                if (!result.IsSuccessStatusCode)
+                IEnumerable<CategoryModel>? data = await _httpClient.GetFromJsonAsync<IEnumerable<CategoryModel>>(string.Empty);
+                if (data is not null)
                 {
-                    resultModel.Errors = new List<string> { "Something went wrong!" };
+                    resultModel.Data = data;
                     return resultModel;
                 }
-                var content = await result.Content.ReadAsStringAsync();
-                resultModel.Data = JsonSerializer.Deserialize<IEnumerable<CategoryModel>>(content);
-                return resultModel;
-            }catch (HttpRequestException httpRequestException)
-            {
-                Console.WriteLine(httpRequestException.Message);
-                resultModel.Errors = new List<string> { "Connection error!" };
+
+                resultModel.Errors.Add("Something went wrong!");
                 return resultModel;
             }
-        }
-        //write a delete method in the CategoryApiService
-        //call the https://api.escuelajs.co/api/v1/categories/{id} endpoint
-        public async Task<bool> DeleteAsync(int id)
-        {
-            try
+            catch (HttpRequestException httpRequestException)
             {
-                //call the endpoint
-                var result = await _httpClient.DeleteAsync($"{_httpClient.BaseAddress}/{id}");
-                //evaluate true false
-                //return true || false
-                return result.IsSuccessStatusCode;
-            }catch(HttpRequestException httpRequestException)
-            {
-                Console.WriteLine(httpRequestException.Message);
-                return false;
+                _logger.LogError(httpRequestException, "Error fetching categories");
+                resultModel.Errors.Add("Connection error, please try again later.");
+                return resultModel;
             }
         }
 
-        public async Task<ResultModel<CategoryModel>> UpdateAsync(CreateOrUpdateCategoryModel newCategory)
+        public async Task<ResultModel<bool>> DeleteAsync(int id)
+        {
+            ResultModel<bool> resultModel = new ResultModel<bool>();
+            try
+            {
+                HttpResponseMessage result = await _httpClient.DeleteAsync($"{id}");
+                if (result.IsSuccessStatusCode)
+                {
+                    resultModel.Data = true;
+                    return resultModel;
+                }
+
+                resultModel.Errors.Add("Category not deleted!");
+                return resultModel;
+            }
+            catch (HttpRequestException httpRequestException)
+            {
+                _logger.LogError(httpRequestException, "Error deleting category {Id}", id);
+                resultModel.Errors.Add("Connection error, please try again later.");
+                return resultModel;
+            }
+        }
+
+        public async Task<ResultModel<CategoryModel>> UpdateAsync(CreateOrUpdateCategoryModel category)
         {
             try
             {
-                var result = await _httpClient.PutAsJsonAsync($"{_httpClient.BaseAddress}/{newCategory.Id}",newCategory);
+                HttpResponseMessage result = await _httpClient.PutAsJsonAsync($"{category.Id}", category);
                 if (result.IsSuccessStatusCode)
                 {
-                    return new ResultModel<CategoryModel>
+                    CategoryModel? data = await result.Content.ReadFromJsonAsync<CategoryModel>();
+                    if (data is not null)
                     {
-                        Data = JsonSerializer.Deserialize<CategoryModel>(await result.Content.ReadAsStringAsync())
-                    };
+                        return new ResultModel<CategoryModel> { Data = data };
+                    }
                 }
-                return new ResultModel<CategoryModel>
-                {
-                    Errors = new List<string> { "Category not updated!" }
-                };
-            }catch(HttpRequestException httpRequestException)
+
+                ResultModel<CategoryModel> errorResult = new ResultModel<CategoryModel>();
+                errorResult.Errors.Add("Category not updated!");
+                return errorResult;
+            }
+            catch (HttpRequestException httpRequestException)
             {
-                Console.WriteLine(httpRequestException.Message);
-                return new ResultModel<CategoryModel>
-                {
-                    Errors = new List<string> { "Connection error!" }
-                };
+                _logger.LogError(httpRequestException, "Error updating category {Id}", category.Id);
+                ResultModel<CategoryModel> errorResult = new ResultModel<CategoryModel>();
+                errorResult.Errors.Add("Connection error, please try again later.");
+                return errorResult;
             }
         }
     }
