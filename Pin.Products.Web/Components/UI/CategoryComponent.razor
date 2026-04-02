@@ -1,0 +1,17 @@
+﻿
+<div class="col col-lg-2 border border-1 rounded rounded-2 text-center m-1 p-2">
+    <p>@Category.Name</p>
+    <div>
+        <button class="btn btn-outline-info" @onclick="@(()=>OnEdit.InvokeAsync(Category))">Edit</button>
+        <button class="btn btn-outline-danger" @onclick="@(()=> OnDelete.InvokeAsync(Category.Id))">Delete</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public CategoryModel Category { get; set; }
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
+    [Parameter]
+    public EventCallback<CategoryModel> OnEdit { get; set; }
+}

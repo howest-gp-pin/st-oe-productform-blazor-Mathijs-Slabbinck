@@ -1,0 +1,17 @@
+﻿@page "/products"
+@inject IProductApiService ProductService
+<h3>Products</h3>
+@if(ProductModels is not null)
+{ 
+    @foreach(var product in ProductModels)
+    { 
+        <p>@product</p>
+    }
+}
+@code {
+    public IEnumerable<ProductModel> ProductModels { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+}
