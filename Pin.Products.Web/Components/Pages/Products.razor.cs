@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Pin.Products.Core.Services.Interfaces;
 using Pin.Products.Core.Services.Models;
 
@@ -12,9 +13,15 @@ namespace Pin.Products.Web.Components.Pages
         [Inject]
         private ICategoryApiService CategoryService { get; set; } = default!;
 
+        [Inject]
+        private IFileUploadService FileUploadService { get; set; } = default!;
+
+        private const long MaxFileSizeBytes = 5 * 1024 * 1024;
+
         private List<string>? errorMessages;
         private List<string>? successMessages;
         private CreateOrUpdateProductModel? newProduct;
+        private bool isUploading;
         private IEnumerable<ProductModel>? productModels;
         private IEnumerable<CategoryModel> categories = Enumerable.Empty<CategoryModel>();
 
@@ -27,7 +34,7 @@ namespace Pin.Products.Web.Components.Pages
 
             List<string> errors = new List<string>();
 
-            ResultModel<IEnumerable<ProductModel>> productResult = productTask.Result;
+            ResultModel<IEnumerable<ProductModel>> productResult = await productTask;
             if (productResult.IsSuccess)
             {
                 productModels = productResult.Data;
@@ -37,7 +44,7 @@ namespace Pin.Products.Web.Components.Pages
                 errors.AddRange(productResult.Errors);
             }
 
-            ResultModel<IEnumerable<CategoryModel>> categoryResult = categoryTask.Result;
+            ResultModel<IEnumerable<CategoryModel>> categoryResult = await categoryTask;
             if (categoryResult.IsSuccess)
             {
                 categories = categoryResult.Data ?? Enumerable.Empty<CategoryModel>();
@@ -56,6 +63,7 @@ namespace Pin.Products.Web.Components.Pages
         private async Task GetProducts()
         {
             errorMessages = null;
+            successMessages = null;
             productModels = null;
             ResultModel<IEnumerable<ProductModel>> result = await ProductService.GetAllAsync();
             if (result.IsSuccess)
@@ -132,6 +140,40 @@ namespace Pin.Products.Web.Components.Pages
             await GetProducts();
         }
 
+        private async Task HandleImageUpload(InputFileChangeEventArgs e)
+        {
+            isUploading = true;
+            try
+            {
+                IBrowserFile file = e.File;
+
+                using Stream stream = file.OpenReadStream(MaxFileSizeBytes);
+                ResultModel<string> result = await FileUploadService.UploadAsync(stream, file.Name);
+
+                if (result.IsSuccess && result.Data is not null)
+                {
+                    newProduct?.Images.Add(result.Data);
+                }
+                else
+                {
+                    errorMessages = result.Errors;
+                }
+            }
+            catch (IOException)
+            {
+                errorMessages = new List<string> { "File is too large. Maximum size is 5 MB." };
+            }
+            finally
+            {
+                isUploading = false;
+            }
+        }
+
+        private void RemoveImage(string imageUrl)
+        {
+            newProduct?.Images.Remove(imageUrl);
+        }
+
         private void Edit(ProductModel productModel)
         {
             newProduct = new CreateOrUpdateProductModel
@@ -141,7 +183,7 @@ namespace Pin.Products.Web.Components.Pages
                 Price = productModel.Price,
                 Description = productModel.Description,
                 CategoryId = productModel.Category?.Id ?? 0,
-                Images = productModel.Images
+                Images = new List<string>(productModel.Images)
             };
         }
     }

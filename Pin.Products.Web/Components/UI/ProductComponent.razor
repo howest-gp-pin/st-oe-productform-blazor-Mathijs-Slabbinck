@@ -1,4 +1,10 @@
 <article class="col col-sm-6 col-md-4 col-lg-3 border rounded text-center m-1 p-2">
+    @if (Product.Images.FirstOrDefault() is string firstImage)
+    {
+        <img src="@firstImage"
+             alt="Image of @Product.Title"
+             class="img-fluid mb-2 rounded product-image" />
+    }
     <h2 class="h6"><strong>@Product.Title</strong></h2>
     <dl>
         <dt class="visually-hidden">Description</dt>
@@ -9,10 +15,12 @@
         <dd>@Product.Category?.Name</dd>
     </dl>
     <div>
-        <button class="btn btn-outline-info"
+        <button type="button"
+                class="btn btn-outline-info"
                 aria-label="Edit @Product.Title"
                 @onclick="@(() => OnEdit.InvokeAsync(Product))">Edit</button>
-        <button class="btn btn-outline-danger"
+        <button type="button"
+                class="btn btn-outline-danger"
                 aria-label="Delete @Product.Title"
                 @onclick="@(() => OnDelete.InvokeAsync(Product.Id))">Delete</button>
     </div>

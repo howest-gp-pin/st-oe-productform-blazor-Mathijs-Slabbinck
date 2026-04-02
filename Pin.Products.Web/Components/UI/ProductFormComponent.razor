@@ -6,37 +6,41 @@
             <ValidationSummary />
         </div>
         <div class="mb-3">
-            <label for="product-title">Title:</label>
+            <label for="product-title">Title <span aria-hidden="true">*</span></label>
             <InputText id="product-title"
                        @bind-Value="NewProduct.Title"
                        class="form-control"
                        autocomplete="off"
+                       aria-required="true"
                        aria-describedby="product-title-validation" />
             <ValidationMessage id="product-title-validation" For="@(() => NewProduct.Title)" />
         </div>
         <div class="mb-3">
-            <label for="product-price">Price:</label>
+            <label for="product-price">Price <span aria-hidden="true">*</span></label>
             <InputNumber id="product-price"
                          @bind-Value="NewProduct.Price"
                          class="form-control"
                          autocomplete="off"
+                         aria-required="true"
                          aria-describedby="product-price-validation" />
             <ValidationMessage id="product-price-validation" For="@(() => NewProduct.Price)" />
         </div>
         <div class="mb-3">
-            <label for="product-description">Description:</label>
+            <label for="product-description">Description <span aria-hidden="true">*</span></label>
             <InputText id="product-description"
                        @bind-Value="NewProduct.Description"
                        class="form-control"
                        autocomplete="off"
+                       aria-required="true"
                        aria-describedby="product-description-validation" />
             <ValidationMessage id="product-description-validation" For="@(() => NewProduct.Description)" />
         </div>
         <div class="mb-3">
-            <label for="product-category">Category:</label>
+            <label for="product-category">Category <span aria-hidden="true">*</span></label>
             <InputSelect id="product-category"
                          @bind-Value="NewProduct.CategoryId"
-                         class="form-control"
+                         class="form-select"
+                         aria-required="true"
                          aria-describedby="product-category-validation">
                 <option value="0">-- Select a category --</option>
                 @foreach (CategoryModel category in Categories)
@@ -46,6 +50,49 @@
             </InputSelect>
             <ValidationMessage id="product-category-validation" For="@(() => NewProduct.CategoryId)" />
         </div>
+        <div class="mb-3">
+            <label for="product-images">Images</label>
+            <InputFile id="product-images"
+                       OnChange="@((InputFileChangeEventArgs e) => OnUploadImage.InvokeAsync(e))"
+                       accept="image/jpeg,image/png,image/gif,image/webp"
+                       class="form-control"
+                       aria-describedby="product-images-help"
+                       disabled="@IsUploading" />
+            <small id="product-images-help" class="form-text text-muted">
+                Accepted formats: JPG, PNG, GIF, WEBP
+            </small>
+        </div>
+        @if (IsUploading)
+        {
+            <div class="mb-3" aria-live="polite">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Uploading image...
+            </div>
+        }
+        @if (NewProduct.Images.Any())
+        {
+            <div class="mb-3">
+                <p class="fw-bold mb-1">Current images</p>
+                <div class="d-flex flex-wrap gap-2">
+                    @for (int i = 0; i < NewProduct.Images.Count; i++)
+                    {
+                        int index = i;
+                        string imageUrl = NewProduct.Images[index];
+                        <div class="position-relative image-thumbnail-wrapper">
+                            <img src="@imageUrl"
+                                 alt="Product image @(index + 1) of @NewProduct.Images.Count"
+                                 class="img-thumbnail image-thumbnail" />
+                            <button type="button"
+                                    class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                    aria-label="Remove image @(index + 1)"
+                                    @onclick="@(() => OnRemoveImage.InvokeAsync(imageUrl))">
+                                &times;
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
         <button type="submit" class="btn btn-outline-info">Save</button>
         <button type="button" class="btn btn-outline-warning" @onclick="@(() => OnCancel.InvokeAsync())">Cancel</button>
     </EditForm>
@@ -60,4 +107,10 @@
     public EventCallback<CreateOrUpdateProductModel> OnSave { get; set; }
     [Parameter]
     public EventCallback OnCancel { get; set; }
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnUploadImage { get; set; }
+    [Parameter]
+    public EventCallback<string> OnRemoveImage { get; set; }
+    [Parameter]
+    public bool IsUploading { get; set; }
 }

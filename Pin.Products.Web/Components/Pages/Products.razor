@@ -22,7 +22,13 @@ else
 {
     @if (newProduct is not null)
     {
-        <ProductFormComponent NewProduct="newProduct" Categories="categories" OnSave="Save" OnCancel="Cancel" />
+        <ProductFormComponent NewProduct="newProduct"
+                              Categories="categories"
+                              OnSave="Save"
+                              OnCancel="Cancel"
+                              OnUploadImage="HandleImageUpload"
+                              OnRemoveImage="RemoveImage"
+                              IsUploading="isUploading" />
     }
     else
     {

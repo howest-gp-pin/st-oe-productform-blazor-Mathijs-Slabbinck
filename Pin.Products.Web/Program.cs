@@ -24,6 +24,13 @@ namespace Pin.Products.Web
                 client.BaseAddress = new Uri(baseUrl);
             });
 
+            builder.Services.AddHttpClient<IFileUploadService, FileUploadService>(client =>
+            {
+                string baseUrl = builder.Configuration["ApiSettings:FileUploadBaseUrl"]
+                    ?? "https://api.escuelajs.co/api/v1/files/upload";
+                client.BaseAddress = new Uri(baseUrl);
+            });
+
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
